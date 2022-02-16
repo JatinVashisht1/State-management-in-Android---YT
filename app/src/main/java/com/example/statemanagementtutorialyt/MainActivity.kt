@@ -7,12 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.statemanagementtutorialyt.ui.theme.StateManagementTutorialYTTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,8 +25,52 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    
+                    MyUi()
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun MyUi(viewModel: MainViewModel = hiltViewModel()) {
+
+    val scaffoldState = rememberScaffoldState()
+
+    LaunchedEffect(key1 = Unit){
+        val event = viewModel.uiEvent.receiveAsFlow().collect {  uiEvent ->
+            when(uiEvent){
+                is UiEvent.ShowSnackbar -> scaffoldState.snackbarHostState.showSnackbar(message = uiEvent.message)
+            }
+        }
+    }
+
+    // column is equivalent to linear layout of xml
+    // control
+    // elements used to have internal state in xml
+    // compose offers uni-directional dataflow
+
+    // Column: Places children vertically
+    // Row: Places children horizontally
+   val textFieldState = viewModel.textFieldState.value
+    Scaffold(scaffoldState = scaffoldState) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            // blank
+            // isNotBlank
+            // isNot && length < 5 characters
+            // isError : true/false
+            // blank: placeholder
+            TextField(
+                value = textFieldState.textFieldString,
+                onValueChange = viewModel::onTextFieldValueChange,
+                modifier = Modifier.fillMaxWidth(0.5f),
+                isError = textFieldState.isError,
+                placeholder = {
+                    Text(text = textFieldState.placeholder)
+                }
+            )
+            Button(onClick = viewModel::onSaveButtonClicked) {
+                Text("Save")
             }
         }
     }
